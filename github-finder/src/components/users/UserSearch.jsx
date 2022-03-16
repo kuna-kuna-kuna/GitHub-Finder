@@ -1,9 +1,10 @@
 import { useState,useContext } from "react"
 import GithubContext from "../../context/github/GithubContext"
 import AlertContext from "../../context/alert/AlertContext"
+import {SearchUser} from "../../context/github/GithubActions"
 
 function UserSearch() {
-    const {users,SearchUser,clearUsers} = useContext(GithubContext)
+    const {users,dispatch} = useContext(GithubContext)
 
     const {setAlert} = useContext(AlertContext)
 
@@ -11,21 +12,20 @@ function UserSearch() {
 
     const handleChange = (e) =>setText(e.target.value)
 
-    const handleSubmit = (e) =>{
+    const handleSubmit = async (e) =>{
         e.preventDefault()
 
         if(text===''){
             setAlert('please enter something','error')
         }else{
-            SearchUser(text)
+          dispatch({type:'SET_LOADING'})
+           const users = await SearchUser(text)
+           dispatch({type:'GET_USERS',payload:users})
+
             setText('')
         }
     }
-    const handleClear=(e)=>{
-        e.preventDefault()
-
-        clearUsers()
-    }
+    
   return (
     <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
       <div>
@@ -52,7 +52,7 @@ function UserSearch() {
       {users.length > 0 && (
         <div>
           <button
-            className='btn btn-ghost btn-lg' onClick={handleClear}
+            className='btn btn-ghost btn-lg' onClick={()=>dispatch({type:'CLEAR_USERS'})}
           >
             Clear
           </button>
